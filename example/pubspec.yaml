@@ -1,0 +1,12 @@
+name: example
+publish_to: "none"
+
+environment:
+  sdk: ">=2.15.1 <3.0.0"
+
+dependencies:
+  sm_crypto:
+
+dependency_overrides:
+  sm_crypto:
+    path: ../
