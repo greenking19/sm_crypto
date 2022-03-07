@@ -2,7 +2,7 @@ name: sm_crypto
 maintainer: GreenKing19 (@greenking19)
 description: Chinese national encryption algorithm SM2, SM3, SM4
 version: 1.0.0
-homepage: git@github.com:greenking19/sm_crypto.git
+homepage: https://github.com/greenking19/sm_crypto.git
 
 environment:
   sdk: '>=2.15.1 <3.0.0'

@@ -1,11 +1,15 @@
-# SM_CRYPTO Dart 国家加密算法Dart版本
-# SM_CRYPTO Dart
+# SM_CRYPTO 国家加密算法Dart版本
+### Multiple encryption: 
+1. sm2 (coding)
+2. sm3 (coding)
+3. sm4
 
-## 使用 Using
+## Using
+### SM4
 ```dart
 void sm4Example() {
   String key = SM4.createHexKey(key: '1234567890987654');
-  String data = 'Hello! SM-CRYPTO @Greenking19';
+  String data = 'Hello! SM-CRYPTO @greenking19';
   print('👇 ECB Encrypt Mode:');
   String ebcEncryptData = SM4.encrypt(data: data, key: key);
   print('🔒 EBC EncryptptData:\n $ebcEncryptData');
