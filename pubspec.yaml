@@ -1,6 +1,6 @@
 name: sm_crypto
 maintainer: GreenKing19 (@greenking19)
-description: Chinese national encryption algorithm SM2, SM3, SM4
+description: Chinese national encryption algorithm SM2, SM3, SM4. Can output hex string or hex List<int>.
 version: 1.0.0
 homepage: https://github.com/greenking19/sm_crypto.git
 

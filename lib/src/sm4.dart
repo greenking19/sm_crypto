@@ -14,7 +14,7 @@ const ROUND = 32;
 const BLOCK = 16;
 
 /// sbox array
-List<int> Sbox = [
+const List<int> SBox = [
   0xd6,
   0x90,
   0xe9,
@@ -274,7 +274,7 @@ List<int> Sbox = [
 ];
 
 /// ck array
-List<int> CK = [
+const List<int> CK = [
   0x00070e15,
   0x1c232a31,
   0x383f464d,
@@ -398,10 +398,10 @@ int _l2(b) {
 
 /// Nonlinear transformation
 int _byteSub(a) {
-  return (((Sbox[((a & 0xFFFFFFFF) >> 24) & 0xff] & 0xff) << 24) |
-      ((Sbox[((a & 0xFFFFFFFF) >> 16) & 0xff] & 0xff) << 16) |
-      ((Sbox[((a & 0xFFFFFFFF) >> 8) & 0xff] & 0xff) << 8) |
-      (Sbox[a & 0xff] & 0xff));
+  return (((SBox[((a & 0xFFFFFFFF) >> 24) & 0xff] & 0xff) << 24) |
+      ((SBox[((a & 0xFFFFFFFF) >> 16) & 0xff] & 0xff) << 16) |
+      ((SBox[((a & 0xFFFFFFFF) >> 8) & 0xff] & 0xff) << 8) |
+      (SBox[a & 0xff] & 0xff));
 }
 
 /// Encrypt/decrypt operations in a set of 128 bits
