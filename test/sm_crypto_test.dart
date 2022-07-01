@@ -5,18 +5,17 @@ void testChangeParams(List value) {
 }
 
 void main(List<String> args) {
-  String msg = '林金智1234560000000000';
-
-  String testKey = SM4.createHexKey(key: '1');
+  String key = SM4.createHexKey(key: '1234567890987654');
+  String data = 'Hello! SM-CRYPTO @Greenking19';
 
   String encryptData = SM4.encrypt(
-    data: msg,
-    key: testKey,
+    data: data,
+    key: key,
   );
   print('🔐 encryptData data:\n${encryptData.toUpperCase()}');
   String decryptData = SM4.decrypt(
     data: encryptData,
-    key: testKey,
+    key: key,
   );
   print('🔑 decryptData data:\n${decryptData}');
 }

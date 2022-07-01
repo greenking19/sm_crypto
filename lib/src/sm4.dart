@@ -558,7 +558,7 @@ dynamic _sm4Factory({
     }
 
     if (mode == 'cbc') {
-      if (cryptFlag != DECRYPT) {
+      if (cryptFlag == ENCRYPT) {
         // Use last output as encrypted vector
         lastVector = outputArr;
       } else {
@@ -566,7 +566,7 @@ dynamic _sm4Factory({
         lastVector = input;
       }
     }
-    if (mode != DECRYPT) {
+    if (mode == ENCRYPT) {
       int firstZero = outArray.indexOf(0);
       if (firstZero > 0) {
         outArray = outArray.sublist(0, firstZero);
