@@ -13,7 +13,7 @@ const ROUND = 32;
 /// SM4 BLOCK
 const BLOCK = 16;
 
-/// sbox array
+/// sbox list
 const List<int> SBox = [
   0xd6,
   0x90,
@@ -273,7 +273,7 @@ const List<int> SBox = [
   0x48
 ];
 
-/// ck array
+/// ck list
 const List<int> CK = [
   0x00070e15,
   0x1c232a31,
@@ -309,30 +309,25 @@ const List<int> CK = [
   0x646b7279
 ];
 
-/// sm4 crypto mode
-/// [ECB,CBC]
-class SM4CryptoMode {
-  /// ECB mode
-  static const String ECB = 'ecb';
+/// SM4 crypto mode
+///
+/// <li> ECB (default)
+/// <li> CBC
+enum SM4CryptoMode { ECB, CBC }
 
-  /// CBC mode
-  static const String CBC = 'cbc';
-}
+/// SM4 padding mode
+/// <li> PKCS5
+/// <li> PKCS7 (default)
+/// <li> NONE
+enum SM4PaddingMode { PKCS5, PKCS7, NONE }
 
-/// sm4 padding mode
-class SM4PaddingMode {
-  static const String PKCS5 = 'pkcs#5';
-  static const String PKCS7 = 'pkcs#7';
-  static const String NONE = 'none';
-}
+/// SM4 output mode
+///
+/// <li> HexString (default)
+/// <li> Array
+enum SM4OutputMode { Array, HexString }
 
-/// sm4 output mode
-class SM4OutputMode {
-  static const Array = 'array';
-  static const HexString = 'hex';
-}
-
-/// hex string to byte array
+/// hex string to byte list
 List<int> _hexToArray(String str) {
   List<int> intList = [];
   int len = str.length;
@@ -352,8 +347,8 @@ List<int> _hexToArray(String str) {
   return hex.decode(str);
 }
 
-/// hex byte array to hex string
-String _arrayToHex(List<int> arr) {
+/// hex byte list to hex string
+String _listToHex(List<int> arr) {
   String hexString = arr
       .map((item) {
         String itemHexString = item.toRadixString(16);
@@ -371,13 +366,13 @@ String _arrayToHex(List<int> arr) {
   return hexString;
 }
 
-/// Utf8 to byte array
+/// Utf8 to byte list
 List<int> _utf8ToArray(String str) {
   return utf8.encode(str);
 }
 
-/// Byte array to utf8 string
-String _arrayToUtf8(List<int> arr) {
+/// Byte list to utf8 string
+String _listToUtf8(List<int> arr) {
   return utf8.decode(arr);
 }
 
@@ -450,7 +445,7 @@ void _sms4Crypt(
 void _sms4KeyExt(List<int> key, List<int> roundKey, int cryptFlag) {
   List<int> x = List.filled(4, 0);
 
-  // Byte array to word array (here 1 word = 32 bits)
+  // Byte list to word list (here 1 word = 32 bits)
   List<int> tmp = List.filled(4, 0);
   for (int i = 0; i < 4; i++) {
     tmp[0] = key[0 + 4 * i] & 0xff;
@@ -498,16 +493,17 @@ dynamic _sm4Factory({
   required List<int> data,
   required List<int> key,
   required int cryptFlag,
-  String padding = SM4PaddingMode.PKCS7,
-  String mode = SM4CryptoMode.ECB,
+  SM4PaddingMode padding = SM4PaddingMode.PKCS7,
+  SM4CryptoMode mode = SM4CryptoMode.ECB,
   List<int>? iv,
-  String? outputType: SM4OutputMode.HexString,
+  SM4OutputMode? outputType: SM4OutputMode.HexString,
 }) {
   // expand operation
   data = [...data];
 
   // 新增填充，sm4 是 16 个字节一个分组，所以统一走到 pkcs#7
-  if ((padding == 'pkcs#5' || padding == 'pkcs#7') && cryptFlag != DECRYPT) {
+  if ((padding == SM4PaddingMode.PKCS5 || padding == SM4PaddingMode.PKCS7) &&
+      cryptFlag != DECRYPT) {
     int paddingCount = BLOCK - (data.length % BLOCK);
     for (int i = 0; i < paddingCount; i++) {
       data.add(paddingCount);
@@ -529,7 +525,7 @@ dynamic _sm4Factory({
 
     List<int> outputArr = List.filled(16, 0);
 
-    if (mode == 'cbc' && lastVector != null) {
+    if (mode == SM4CryptoMode.CBC && lastVector != null) {
       for (int i = 0; i < BLOCK; i++) {
         if (cryptFlag != DECRYPT) {
           // 加密过程在组加密前进行异或
@@ -542,7 +538,7 @@ dynamic _sm4Factory({
     _sms4Crypt(input, outputArr, roundKey);
 
     for (int i = 0; i < BLOCK; i++) {
-      if (mode == 'cbc') {
+      if (mode == SM4CryptoMode.CBC) {
         if (cryptFlag == DECRYPT && lastVector != null) {
           // The decryption process XORs the group after decryption
           outputArr[i] ^= lastVector[i];
@@ -557,7 +553,7 @@ dynamic _sm4Factory({
       }
     }
 
-    if (mode == 'cbc') {
+    if (mode == SM4CryptoMode.CBC) {
       if (cryptFlag == ENCRYPT) {
         // Use last output as encrypted vector
         lastVector = outputArr;
@@ -577,7 +573,8 @@ dynamic _sm4Factory({
   }
 
   // remove padding, sm4 is a group of 16 bytes, so go to pkcs#7
-  if ((padding == 'pkcs#5' || padding == 'pkcs#7') && cryptFlag == DECRYPT) {
+  if ((padding == SM4PaddingMode.PKCS5 || padding == SM4PaddingMode.PKCS7) &&
+      cryptFlag == DECRYPT) {
     // remove padded 0
     int firstZero = outArray.indexOf(0);
     if (firstZero > 0) {
@@ -594,10 +591,10 @@ dynamic _sm4Factory({
   if (outputType != SM4OutputMode.Array) {
     if (cryptFlag != DECRYPT) {
       // encrypt, out hex string
-      return _arrayToHex(outArray);
+      return _listToHex(outArray);
     } else {
       // decrypt, outpuy utf8 string
-      return _arrayToUtf8(outArray);
+      return _listToUtf8(outArray);
     }
   } else {
     return outArray;
@@ -609,8 +606,8 @@ dynamic _sm4Factory({
 /// 🔍 Check incoming parameters in case of data errors
 void _typeProsecutor({
   required String key,
-  required String mode,
-  String padding = SM4PaddingMode.PKCS7,
+  required SM4CryptoMode mode,
+  SM4PaddingMode padding = SM4PaddingMode.PKCS7,
   dynamic iv,
 }) {
   if (key.length != 32) {
@@ -638,7 +635,7 @@ void _typeProsecutor({
 
 // /// auto add 0x00
 List<int> _autoAddZero(List<int> list) {
-  /// supplementary array
+  /// supplementary list
   List<int> supplementList = List.filled(16, 0x00);
 
   /// complete list
@@ -666,7 +663,7 @@ class SM4 {
         keyList = keyList.sublist(0, 16);
       }
     }
-    return _arrayToHex(keyList);
+    return _listToHex(keyList);
   }
 
   /// encrypt data, output hex string
@@ -689,8 +686,8 @@ class SM4 {
   static String encrypt({
     required String data,
     required String key,
-    String mode = SM4CryptoMode.ECB,
-    String padding = SM4PaddingMode.PKCS7,
+    SM4CryptoMode mode = SM4CryptoMode.ECB,
+    SM4PaddingMode padding = SM4PaddingMode.PKCS7,
     String? iv,
   }) {
     // Check out the parameters
@@ -722,7 +719,7 @@ class SM4 {
     return cryptionData.toUpperCase();
   }
 
-  /// encrypt data, output hex array
+  /// encrypt data, output hex list
   ///
   /// ```dart
   /// // base useing (defalut ECB)
@@ -738,8 +735,8 @@ class SM4 {
   static List<int> encryptOutArray({
     required String data,
     required String key,
-    String mode = SM4CryptoMode.ECB,
-    String padding = SM4PaddingMode.PKCS7,
+    SM4CryptoMode mode = SM4CryptoMode.ECB,
+    SM4PaddingMode padding = SM4PaddingMode.PKCS7,
     String? iv,
   }) {
     // Check out the parameters
@@ -776,8 +773,8 @@ class SM4 {
   static String decrypt({
     required String data,
     required String key,
-    String mode = SM4CryptoMode.ECB,
-    String padding = SM4PaddingMode.PKCS7,
+    SM4CryptoMode mode = SM4CryptoMode.ECB,
+    SM4PaddingMode padding = SM4PaddingMode.PKCS7,
     String? iv,
   }) {
     // Check out the parameters
@@ -808,8 +805,39 @@ class SM4 {
     return decryptData;
   }
 
-  /// decrypt data, output hex array
-  static List<int> decryptOutArray() {
-    return [1];
+  /// decrypt data, output hex list
+  static List<int> decryptOutArray({
+    required String data,
+    required String key,
+    SM4CryptoMode mode = SM4CryptoMode.ECB,
+    SM4PaddingMode padding = SM4PaddingMode.PKCS7,
+    String? iv,
+  }) {
+    _typeProsecutor(
+      key: key,
+      mode: mode,
+      padding: padding,
+      iv: iv,
+    );
+
+    List<int> dataHexList = _hexToArray(data);
+    List<int> keyHexList = _hexToArray(key);
+    List<int>? ivHexList;
+
+    if (iv != null) {
+      ivHexList = _hexToArray(iv);
+    }
+
+    List<int> decryptData = _sm4Factory(
+      data: dataHexList,
+      key: keyHexList,
+      mode: mode,
+      padding: padding,
+      iv: ivHexList,
+      cryptFlag: DECRYPT,
+      outputType: SM4OutputMode.Array,
+    );
+
+    return decryptData;
   }
 }
